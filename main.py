@@ -14,7 +14,7 @@ F = 100
 
 
 def on_click(x, y, button, pressed):
-    # 如果需要，你也可以在这里处理鼠标点击事件
+    # 鼠标事件
     global X, Y, Pressed
     if pressed:
         print(f"{button} pressed at ({x}, {y})")
@@ -43,7 +43,7 @@ def update_number_label(E):
     # 安排下一次更新，数字加1，并延迟1000毫秒（1秒）
     root.after(100, update_number_label, E)
 
-
+# 输入框获取数字
 def on_entry_change(name, index, mode):
     global F
     if std_entry.get():
