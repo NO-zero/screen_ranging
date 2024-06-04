@@ -10,6 +10,7 @@ C = None
 D = None
 Pressed = False
 E = 0
+F = 100
 
 
 def on_click(x, y, button, pressed):
@@ -23,7 +24,7 @@ def on_click(x, y, button, pressed):
 
 # 更新标签显示的数字
 def update_number_label(E):
-    global A, B, C, D, X, Y, Pressed
+    global A, B, C, D, X, Y, Pressed, F
     if Pressed and A is None and B is None and C is None and D is None:
         A = X
         B = Y
@@ -31,21 +32,32 @@ def update_number_label(E):
     if Pressed and A is not None and B is not None and C is None and D is None:
         C = X
         D = Y
-        E = ((A - C) ** 2 + (B - D) ** 2) ** 0.5
+        E = ((A - C) ** 2 + (B - D) ** 2) ** 0.5 / F *100
         A = None
         B = None
         C = None
         D = None
         Pressed = False
     # 将标签的文本设置为新的数字
-    number_label.config(text=str(round(E, 2)))
+    number_label.config(text="距离是：" + str(round(E, 2)))
     # 安排下一次更新，数字加1，并延迟1000毫秒（1秒）
     root.after(100, update_number_label, E)
 
 
+def on_entry_change(name, index, mode):
+    global F
+    if std_entry.get():
+        a = entry_var.get()
+        if type(eval(a)) is (int or float):
+            F = eval(a)
+        else:
+            F = 100
+        print(eval(a))
+
+
 # 创建主窗口
 root = tk.Tk()
-root.title("距离是")
+root.title("开炮")
 
 # 设置窗口始终在最前面
 root.attributes('-topmost', True)
@@ -59,7 +71,16 @@ screen_width, screen_height = pyautogui.size()
 root.geometry(f"{window_width}x{window_height}+{screen_width - 200}+{100}")
 
 # 创建一个标签用于显示数字
-number_label = tk.Label(root, font=("Arial", 24), text="0")  # 初始数字为0
+entry_label = tk.Label(root, text="一格的距离", font=("Arial", 10))
+entry_label.pack()
+
+entry_var = tk.StringVar()
+entry_var.trace("w", on_entry_change)
+std_entry = tk.Entry(root, textvariable=entry_var)
+std_entry.pack()
+
+
+number_label = tk.Label(root, font=("Arial", 10), text="距离是：0")  # 初始数字为0
 number_label.pack(pady=20)  # 设置垂直填充和间距
 
 # 启动数字更新循环，从0开始
