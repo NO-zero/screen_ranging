@@ -45,7 +45,7 @@ def update_number_label(E):
 
 # 创建主窗口
 root = tk.Tk()
-root.title("屏幕右上角显示窗口")
+root.title("距离是")
 
 # 设置窗口始终在最前面
 root.attributes('-topmost', True)
