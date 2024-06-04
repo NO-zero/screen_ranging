@@ -3,4 +3,4 @@
 ，这个一格的距离在游戏中就代表着100m</h5>
 <h5>可能会因为不同尺寸的屏幕，和不同的游戏地图， 一格的距离也不会不同，请在每局游戏开始时，手动输入100后再进行测量。</h5>
 <h5>一格的距离测量完毕后，再次点击鼠标显示的距离，直接就是迫击炮该调的数字。</h5>
-<h5>下面是打包好的exe文件连接网盘链接：<a href="https://pan.baidu.com/s/1ni8O7flEk2KStLt23nTFmw?pwd=4z27" target="_blank">网盘链接</a></h5>
+<h5>这是打包好的exe文件网盘链接：<a href="https://pan.baidu.com/s/1ni8O7flEk2KStLt23nTFmw?pwd=4z27" target="_blank">网盘链接</a></h5>
