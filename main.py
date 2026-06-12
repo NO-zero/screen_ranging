@@ -1,94 +1,152 @@
 import pynput
 import pyautogui
 import tkinter as tk
+from tkinter import colorchooser
+import math
 
-X = None
-Y = None
-A = None
-B = None
-C = None
-D = None
-Pressed = False
-E = 0
-F = 100
+# 初始化全局变量
+pos1 = (0, 0)
+pos2 = (0, 0)
+scale_factor = 100
+transparent_mode = False
+text_color = "black"
+root = None
 
+def on_press(key):
+    global pos1, pos2, transparent_mode
+    try:
+        if key == pynput.keyboard.KeyCode(char='1'):
+            x, y = pyautogui.position()
+            pos1 = (x, y)
+        elif key == pynput.keyboard.KeyCode(char='2'):
+            x, y = pyautogui.position()
+            pos2 = (x, y)
+        elif key == pynput.keyboard.Key.f12:
+            transparent_mode = not transparent_mode
+            toggle_transparent_mode()
+    except AttributeError:
+        pass
 
-def on_click(x, y, button, pressed):
-    # 鼠标事件
-    global X, Y, Pressed
-    if pressed:
-        print(f"{button} pressed at ({x}, {y})")
-        X, Y = pyautogui.position()
-        Pressed = True
+def toggle_transparent_mode():
+    global root, scale_frame, color_btn
+    transparent_color = '#000001'
+    default_bg = 'SystemButtonFace'
 
+    if transparent_mode:
+        root.overrideredirect(True)
+        scale_frame.pack_forget()
+        color_btn.pack_forget()
+        root.configure(bg=transparent_color)
+        root.attributes('-transparentcolor', transparent_color)
+    else:
+        root.overrideredirect(False)
+        root.title("坐标距离计算器（带缩放+透明模式）")
+        scale_frame.pack(pady=5, padx=10, fill=tk.X)
+        color_btn.pack(pady=5)
+        root.configure(bg=default_bg)
+        root.attributes('-transparentcolor', '')
 
-# 更新标签显示的数字
-def update_number_label(E):
-    global A, B, C, D, X, Y, Pressed, F
-    if Pressed and A is None and B is None and C is None and D is None:
-        A = X
-        B = Y
-        Pressed = False
-    if Pressed and A is not None and B is not None and C is None and D is None:
-        C = X
-        D = Y
-        E = ((A - C) ** 2 + (B - D) ** 2) ** 0.5 / F *100
-        A = None
-        B = None
-        C = None
-        D = None
-        Pressed = False
-    # 将标签的文本设置为新的数字
-    number_label.config(text="距离是：" + str(round(E, 2)))
-    # 安排下一次更新，数字加1，并延迟1000毫秒（1秒）
-    root.after(100, update_number_label, E)
+def update_scale_factor(*args):
+    global scale_factor
+    try:
+        input_value = entry_var.get().strip()
+        if input_value:
+            new_factor = float(input_value)
+            scale_factor = new_factor if new_factor != 0 else 100
+    except ValueError:
+        scale_factor = 100
 
-# 输入框获取数字
-def on_entry_change(name, index, mode):
-    global F
-    if std_entry.get():
-        a = entry_var.get()
-        if type(eval(a)) is (int or float):
-            F = eval(a)
-        else:
-            F = 100
-        print(eval(a))
+def choose_text_color():
+    global text_color
+    selected_color = colorchooser.askcolor(title="选择文字颜色")[1]
+    if selected_color:
+        text_color = selected_color
 
+def calculate_euclidean_distance(point1, point2):
+    x1, y1 = point1
+    x2, y2 = point2
+    raw_distance = math.hypot(x1 - x2, y1 - y2)
+    scaled_distance = (raw_distance / scale_factor) * 100
+    return round(scaled_distance, 2)
 
-# 创建主窗口
+def update_ui():
+    distance = calculate_euclidean_distance(pos1, pos2)
+
+    if transparent_mode:
+        pos1_label.config(
+            text=f"pos1坐标：{pos1}",
+            fg=text_color,
+            bg='#000001'
+        )
+        pos2_label.config(
+            text=f"pos2坐标：{pos2}",
+            fg=text_color,
+            bg='#000001'
+        )
+        distance_label.config(
+            text=f"换算后距离：{distance}",
+            fg=text_color,
+            bg='#000001'
+        )
+    else:
+        pos1_label.config(
+            text=f"pos1坐标：{pos1}",
+            fg=text_color,
+            bg='SystemButtonFace'
+        )
+        pos2_label.config(
+            text=f"pos2坐标：{pos2}",
+            fg=text_color,
+            bg='SystemButtonFace'
+        )
+        distance_label.config(
+            text=f"换算后距离：{distance}",
+            fg=text_color,
+            bg='SystemButtonFace'
+        )
+
+    scale_label.config(text=f"当前缩放系数：{scale_factor:.1f}")
+    root.after(100, update_ui)
+
+# 初始化UI
 root = tk.Tk()
-root.title("开炮")
-
-# 设置窗口始终在最前面
+root.title("坐标距离计算器（带缩放+透明模式）")
 root.attributes('-topmost', True)
-
-# 设置窗口大小
-window_width = 200
-window_height = 100
-
-# 获取屏幕分辨率并设置窗口位置
+window_width = 350
+window_height = 220
 screen_width, screen_height = pyautogui.size()
-root.geometry(f"{window_width}x{window_height}+{screen_width - 200}+{100}")
+root.geometry(f"{window_width}x{window_height}+{screen_width - 350}+{100}")
 
-# 创建一个标签用于显示数字
-entry_label = tk.Label(root, text="一格的距离", font=("Arial", 10))
-entry_label.pack()
+scale_frame = tk.Frame(root)
+scale_frame.pack(pady=5, padx=10, fill=tk.X)
 
-entry_var = tk.StringVar()
-entry_var.trace("w", on_entry_change)
-std_entry = tk.Entry(root, textvariable=entry_var)
-std_entry.pack()
+scale_label_title = tk.Label(scale_frame, text="缩放基准值：", font=("Arial", 10))
+scale_label_title.pack(side=tk.LEFT)
 
+entry_var = tk.StringVar(value=str(scale_factor))
+entry_var.trace("w", update_scale_factor)
+scale_entry = tk.Entry(scale_frame, textvariable=entry_var, width=10, font=("Arial", 10))
+scale_entry.pack(side=tk.LEFT, padx=5)
 
-number_label = tk.Label(root, font=("Arial", 10), text="距离是：0")  # 初始数字为0
-number_label.pack(pady=20)  # 设置垂直填充和间距
+scale_label = tk.Label(scale_frame, text=f"当前缩放系数：{scale_factor:.1f}", font=("Arial", 10))
+scale_label.pack(side=tk.LEFT)
 
-# 启动数字更新循环，从0开始
-update_number_label(0)
+color_btn = tk.Button(root, text="选择文字颜色", command=choose_text_color)
+color_btn.pack(pady=5)
+
+pos1_label = tk.Label(root, font=("Arial", 10), text=f"pos1坐标：{pos1}", fg=text_color)
+pos1_label.pack(pady=3)
+
+pos2_label = tk.Label(root, font=("Arial", 10), text=f"pos2坐标：{pos2}", fg=text_color)
+pos2_label.pack(pady=3)
+
+distance_label = tk.Label(root, font=("Arial", 12, "bold"), text=f"换算后距离：0.00", fg=text_color)
+distance_label.pack(pady=10)
+
+update_ui()
 
 if __name__ == '__main__':
-    listener = pynput.mouse.Listener(on_click=on_click)
-    listener.start()
-    # 运行Tkinter事件循环
+    keyboard_listener = pynput.keyboard.Listener(on_press=on_press)
+    keyboard_listener.start()
     root.mainloop()
-    listener.stop()
+    keyboard_listener.stop()
